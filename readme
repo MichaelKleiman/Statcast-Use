@@ -1,0 +1,3 @@
+run gui.py (for python 3)
+baseballsavant.mlb.com (where this data comes from) can be slow to respond
+names are case sensitive in "First Last" format
