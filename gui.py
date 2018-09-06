@@ -44,6 +44,13 @@ def handleName():
     elif name [-2:] == 'jr' or name[-2:] == 'Jr':
         name = name[0:-2] + 'Jr.'
     return name
+
+def handlePos():
+    pos = entry.get()
+    if len(pos) > 2 or len(pos) == 0:
+        raise ValueError()
+    return pos.upper()
+
 #displays a string. makes submit() a little cleaner
 def display(string):
     displayLabel.pack()
@@ -55,16 +62,27 @@ def submit():
     b['state'] = DISABLED
     b.update()
     tup = catcherArm.main() if throwVar.get() else sprintSpeed.main()
-    #get spring speed comparisons by position
-    if sprintVar.get() and byPosVar.get() and not stddevVar.get():
-        try:
-            name = handleName()
-            tup = positionArray.main(tup, name) 
-        except:
-            display('please enter a reasonably formatted name')
-            b['state'] = NORMAL
-            b.update()
-            return
+    #get sprint speed comparisons by position
+    if sprintVar.get() and byPosVar.get():
+        if stddevVar.get():
+            try:
+                pos = handlePos()
+                tup = positionArray.main(tup, pos) 
+            except:
+                display('enter a valid position')
+                b['state'] = NORMAL
+                b.update()
+                return
+        
+        else:
+            try:
+                name = handleName()
+                tup = positionArray.main(tup, name) 
+            except:
+                display('please enter a reasonably formatted name')
+                b['state'] = NORMAL
+                b.update()
+                return
     index = 1 
     if throwVar.get():
         index = exchangeVar.get() + poptimeVar.get() + armStrengthVar.get() 
@@ -203,6 +221,13 @@ def keyPress(event):
 #one also checks if the textbox for entering names should be displayed
 def validate():
     global entryHasText
+    if byPosVar.get():
+        enterName['text'] = 'enter position (incl "OF"):'
+        entry['width'] = 6
+    else:
+        enterName['text'] = 'enter name:' 
+        entry['width'] = 20
+
     redraw()
     if throwVar.get() + sprintVar.get() == 0:
         b['state'] = DISABLED 
@@ -215,7 +240,7 @@ def validate():
         b.update()
         return
     
-    if percentileVar.get() + scoutVar.get():
+    if percentileVar.get() + scoutVar.get() + (stddevVar.get() * byPosVar.get()):
         displayTextBox()
         if not entryHasText: 
             b['state'] = DISABLED 
