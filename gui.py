@@ -18,6 +18,7 @@ def redraw():
     midNextFrame.pack_forget()
     displayLabel.pack_forget()
     midMeanMedianFrame.pack_forget()
+    midYearFrame.pack_forget()
     if throwVar.get(): 
         throwOptionsFrame.pack(side = RIGHT)
     elif sprintVar.get():
@@ -27,6 +28,7 @@ def redraw():
     midFrame.pack()
     if stddevVar.get() + scoutVar.get():
         midMeanMedianFrame.pack()
+    midYearFrame.pack()
     midNextFrame.pack()
     if len(displayLabel['text']) > 0:
         displayLabel.pack()
@@ -51,6 +53,16 @@ def handlePos():
         raise ValueError()
     return pos.upper()
 
+#assumes the current baseball season is 2019; needs to be updated once the 2020 season starts
+def handleYear():
+    year = yearEntry.get()
+    if len(year) is 2:
+        year = '20' + year
+    intYear= int(year)
+    if intYear > 2019 or intYear < 2015:
+        raise ValueError()
+    return year 
+
 #displays a string. makes submit() a little cleaner
 def display(string):
     displayLabel.pack()
@@ -58,10 +70,19 @@ def display(string):
 
 #when the button is clicked or return is pressed, runs the requested calculation from the imported files
 #gets data from baseballsavant.mlb.com/...
+###time to add the year function
 def submit():
     b['state'] = DISABLED
     b.update()
-    tup = catcherArm.main() if throwVar.get() else sprintSpeed.main()
+    try:
+        year = handleYear() if yearVar.get() else 0
+    except:
+        display('enter a valid year')
+        b['state'] = NORMAL
+        b.update()
+        return
+
+    tup = catcherArm.main(year) if throwVar.get() else sprintSpeed.main(year)
     #get sprint speed comparisons by position
     if sprintVar.get() and byPosVar.get():
         if stddevVar.get():
@@ -124,7 +145,17 @@ def displayTextBox(boolean=True):
         return
     entry['state'] = DISABLED 
 
-
+#displays the year textbox if year is checked ###in progress
+def displayYearTextBox(boolean=True):
+    if yearVar.get():
+        yearEntry.pack(side=RIGHT)
+        yearEntry.pack(side=LEFT)
+        yearEntry['state'] = NORMAL 
+        validate()
+        return
+    validate()
+    yearEntry['state'] = DISABLED 
+        
 #needs to modify behavior of Backspace for CTRL+Backspace combination.
 #also determines if the current deletion will clear the text box (and thus need to disable the button)
 #the normal Backspace event still happens afterwards
@@ -145,14 +176,33 @@ def handleBackspace():
             if len(entry.get()) == 0:
                 entryHasText = False
                 b['state'] = DISABLED
-    b.update()
-    return
+        b.update()
+        return
     if len(entry.get()) == 1 and entry.index(INSERT) != 0:
         b['state'] = DISABLED
         entryHasText = False
         
     b.update()
+    return
+
+#the same, but for the yearEntry
+def handleBackspaceYear():
+    global ctrl
+    global yearEntryHasText
+    if ctrl:
+        yearEntry.delete(0, INSERT)
+        if len(yearEntry.get()) == 0:
+            yearEntryHasText = False
+            b['state'] = DISABLED
+        b.update()
+        return
+    if len(yearEntry.get()) == 1 and yearEntry.index(INSERT) != 0:
+        b['state'] = DISABLED
+        yearEntryHasText = False
+    b.update()
     return 
+
+
 #same as handleBackspace, but reversed and for the 'Delete' Key. Called by keyPress
 def handleDelete():
     global ctrl
@@ -170,15 +220,33 @@ def handleDelete():
             if len(entry.get()) == 0:
                 entryHasText = False
                 b['state'] = DISABLED
-    b.update()
-    return
+        b.update()
+        return
     if len(entry.get()) == 1 and entry.index(INSERT) == 0:
         b['state'] = DISABLED
         entryHasText = False
         
     b.update()
     return 
-    
+
+#the same as handleDelete, but for yearEntry
+def handleDeleteYear():   
+    global ctrl
+    global yearEntryHasText
+    if ctrl:
+        yearEntry.delete(INSERT, END)
+        if len(yearEntry.get()) == 0:
+            yearEntryHasText = False
+            b['state'] = DISABLED
+        
+        b.update()
+        return
+    if len(yearEntry.get()) == 1 and yearEntry.index(INSERT) == 0:
+        b['state'] = DISABLED
+        yearEntryHasText = False
+    b.update()
+    return
+
 #for knowing if left CTRL is currently pressed.
 def controlPressed(event):
     global ctrl
@@ -187,15 +255,21 @@ def controlReleased(event):
     global ctrl
     ctrl = False
 
-#makes ctrl+a delete the whole think, instead of jump to the left
-def handlectrla(event):
+#makes ctrl+a delete the whole text entry, instead of jump to the left
+def handlectrlaName(event):
    b['state'] = DISABLED
    global entryHasText
    entry.delete(0, END)
    entryHasText = False
 
+def handlectrlaYear(event):
+   b['state'] = DISABLED
+   global yearEntryHasText
+   yearEntry.delete(0, END)
+   yearEntryHasText = False
+
 #handles keypresses, except for left CTRL
-def keyPress(event):
+def keyPressName(event):
     if event.keysym == 'BackSpace':
         handleBackspace()
         return
@@ -209,10 +283,32 @@ def keyPress(event):
     
     global ctrl
     if ctrl and event.keysym == 'a':
-        handlectrla(event)
+        handlectrlaName(event)
         validate()
     elif not entryHasText:
-        entryHasText = True
+        if event.char:
+            entryHasText = True
+        validate()
+
+def keyPressYear(event):
+    if event.keysym == 'BackSpace':
+        handleBackspaceYear()
+        return
+    if event.keysym == 'Delete':
+        handleDeleteYear()
+        return
+    if event.keysym == 'Return' and b['state'] == NORMAL:
+        submit()
+        return
+    global yearEntryHasText
+    
+    global ctrl
+    if ctrl and event.keysym == 'a':
+        handlectrlaYear(event)
+        validate()
+    elif not yearEntryHasText:
+        if event.char:
+            yearEntryHasText = True
         validate()
          
 
@@ -221,13 +317,13 @@ def keyPress(event):
 #one also checks if the textbox for entering names should be displayed
 def validate():
     global entryHasText
-    if byPosVar.get():
+    global yearEntryHasText
+    if byPosVar.get() and stddevVar.get():
         enterName['text'] = 'enter position (incl "OF"):'
         entry['width'] = 6
     else:
         enterName['text'] = 'enter name:' 
         entry['width'] = 20
-
     redraw()
     if throwVar.get() + sprintVar.get() == 0:
         b['state'] = DISABLED 
@@ -245,9 +341,15 @@ def validate():
         if not entryHasText: 
             b['state'] = DISABLED 
             b.update()
-            return 
+            return  
     else:
         displayTextBox(False)
+
+    if yearVar.get() and not yearEntryHasText:
+        b['state'] = DISABLED 
+        b.update()
+        return  
+        
     if meanVar.get() + medianVar.get() + percentileVar.get():
         b['state'] = NORMAL
         b.update()
@@ -312,7 +414,9 @@ top = Tk()
 top.resizable(False, False) #the window behaves erratically if it's been resized
 ctrl = False
 entryHasText = False
+yearEntryHasText = False
 rightMenuThrow = False
+yearEntryHasText = False
 throwVar = IntVar()
 sprintVar = IntVar()
 percentileVar = IntVar()
@@ -325,6 +429,7 @@ armStrengthVar = IntVar()
 meanVar = IntVar()
 medianVar = IntVar()
 byPosVar = IntVar()
+yearVar= IntVar()
 defaultFont = ('Times', '16')
 
 #containers
@@ -336,13 +441,14 @@ midMeanMedianSubFrame = Frame(midMeanMedianFrame)
 midNextFrame = Frame(top)
 throwOptionsFrame = Frame(top)
 sprintOptionsFrame = Frame(top)
+midYearFrame = Frame(top)
 #content
 sprint = Checkbutton(topFrame, command = sprint, text = 'sprint', font = defaultFont, variable = sprintVar, onvalue = 1, offvalue = 0)  
 throw = Checkbutton(topFrame, command = throw, text = 'throwing', font = defaultFont, variable = throwVar, onvalue = 1, offvalue = 0)
 percentileButton = Checkbutton(nextFrame, command = togglePercentile, text = 'percentile', font = defaultFont, variable = percentileVar, onvalue = 1, offvalue = 0)
 stddevButton = Checkbutton(nextFrame, command = toggleStddev, text = 'stddev', font = defaultFont, variable = stddevVar, onvalue = 1, offvalue = 0)
 scoutButton = Checkbutton(nextFrame, command = toggleScout, text = 'scout', font = defaultFont, variable = scoutVar, onvalue = 1, offvalue = 0)
-
+yearButton = Checkbutton(midYearFrame, command = displayYearTextBox, text  = 'by year', font = ('Times', '16'), variable = yearVar, onvalue = 1, offvalue = 0)
 poptimeButton = Checkbutton(throwOptionsFrame, command = poptime, text = 'poptime', font = defaultFont, variable = poptimeVar, onvalue = 1, offvalue = 0)
 exchangeButton = Checkbutton(throwOptionsFrame, command = exchange, text = 'exchange time', font = defaultFont, variable = exchangeVar, onvalue = 4, offvalue = 0)
 armStrengthButton = Checkbutton(throwOptionsFrame, command = armStrength, text = 'Arm Strength', font = defaultFont, variable = armStrengthVar, onvalue = 3, offvalue = 0)
@@ -351,12 +457,12 @@ armStrengthButton = Checkbutton(throwOptionsFrame, command = armStrength, text =
 rightThrowLabel = Label(throwOptionsFrame, font = defaultFont, text = 'select stat:')
 rightSprintButton = Checkbutton(sprintOptionsFrame, font = defaultFont, text = 'by position?', variable = byPosVar, command = validate)
 entry = Entry(midFrame, font = ('Times','13'), validate = 'key')
+yearEntry = Entry(midYearFrame, font = ('Times', '13'), validate = 'key')
 enterName = Label(midFrame, font = defaultFont, text = 'enter name:')
 displayLabel = Label(top, font = defaultFont, padx = 5, wraplength = 380)
 b = Button(midNextFrame, state = DISABLED, font = ('Times', '14'), text = 'go', command = submit)
 quitButton = Button(midNextFrame, font = ('Times', '14'), text = 'exit', command = sys.exit)
 spacer = Label(midNextFrame)
-
 meanMedianLabel = Label(midMeanMedianFrame, font = ('Times', '14'), text = 'from the mean or the median?')
 meanButton = Checkbutton(midMeanMedianSubFrame, font = ('Times', '14'), command = meanButton, text = 'mean', variable = meanVar)
 medianButton = Checkbutton(midMeanMedianSubFrame, font = ('Times', '14'), command = medianButton, text = 'median', variable = medianVar)
@@ -380,12 +486,17 @@ stddevButton.pack(side = LEFT, padx = 5)
 percentileButton.pack(side = LEFT)
 scoutButton.pack(side = LEFT, padx = 5)
 quitButton.pack(side = LEFT)
+yearButton.pack(side = LEFT, padx = 5)
 spacer.pack(side = LEFT, padx=7)
 b.pack(side = RIGHT)
 
-entry.bind("<Key>", keyPress)
+yearEntry.bind("<Key>", keyPressYear)
+yearEntry.bind("<KeyPress-Control_L>", controlPressed)
+yearEntry.bind("<KeyRelease-Control_L>", controlReleased)
+entry.bind("<Key>", keyPressName)
 entry.bind("<KeyPress-Control_L>", controlPressed)
 entry.bind("<KeyRelease-Control_L>", controlReleased)
+
 frame = Frame(top)
 frame.focus_set()
 top.geometry("+0+0")

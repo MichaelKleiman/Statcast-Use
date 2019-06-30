@@ -1,6 +1,6 @@
 #outputs a new tuple (arr, units), where arr only has the players from one position
 def main(inp, name, index = 3, unused = 0):
-    validPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "OF"]
+    validPositions = ["DH", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "OF"]
     arr = inp[0]
     if len(name) < 3:
         if not name in validPositions:

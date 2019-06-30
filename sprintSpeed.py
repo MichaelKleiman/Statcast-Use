@@ -1,8 +1,14 @@
 #!/usr/bin/python3.6
 import urllib.request
 import sys
-def main():
-    r=urllib.request.urlopen('https://baseballsavant.mlb.com/sprint_speed_leaderboard?year=2018&position=&team=&min=5')
+#options for year are WIP
+def main(year=0):
+    if not year:
+        r=urllib.request.urlopen('https://baseballsavant.mlb.com/sprint_speed_leaderboard')  
+    else:
+        s = 'https://baseballsavant.mlb.com/sprint_speed_leaderboard?year=' + str(year)
+        r=urllib.request.urlopen(s)
+        
     l = r.readline().decode('utf-8')
     #all the data is in a single line
     while l:

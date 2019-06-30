@@ -8,8 +8,13 @@ def getValue(player, splitter):
     endIndex = player.index('"', startIndex)
     return player[startIndex:endIndex]
 
-def main():
-    r=urllib.request.urlopen('https://baseballsavant.mlb.com/poptime')
+#options for year are WIP
+def main(year=0):
+    if not year:
+        r=urllib.request.urlopen('https://baseballsavant.mlb.com/poptime')
+    else:
+        s='https://baseballsavant.mlb.com/poptime?year=' + str(year)
+        r=urllib.request.urlopen(s)
     l = r.readline().decode('utf-8')
     #all the data is in a single line.
     while l:
