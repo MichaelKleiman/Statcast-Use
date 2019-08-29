@@ -5,7 +5,7 @@ def deTuple(arr, index):
     for i in range(len(arr)):
         arr[i]=[arr[i][0], arr[i][index]]
 
-#quicksorts in place the array by the stat. Probably makes a negligable runtime difference compared to other sorts, but it seemed appropriate.
+#quicksorts in place the array by the stat. Probably makes a negligable runtime difference compared to other sorts, but it seemed appropriate. I kind of just wanted to do it this way.
 def quicksort(arr, startIndex, endIndex):
     #not the most efficient base case, but it works
     if endIndex - startIndex < 1:
@@ -42,10 +42,10 @@ def main(inp, name, index = 1, reverse = False):
             break
     
     for i in range(x):
-        if arr[i][0] == name:
+        if arr[i][0].upper() == name.upper():
             p = 100 - (100 * i / x)
             p = round(p, 1)
             if reverse:
                 p = 100.0 - p
-            return(name + ": " + str(p) + '%'+ ' (' + str(arr[i][1])+ units[index] + ')')
+            return(arr[i][0] + ": " + str(p) + '%'+ ' (' + str(arr[i][1])+ units[index] + ')')
     return name + ", none (no data)"

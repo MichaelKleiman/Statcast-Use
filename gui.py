@@ -36,14 +36,14 @@ def redraw():
 #removes lowercase letters at the start of words, converts final 'jr', 'Jr', and 'jr.' to 'Jr.'
 def handleName():
     name = entry.get()
-    if name[0].islower():
+    '''if name[0].islower():
         name = name[0].upper() + name[1:]
     i = name.index(' ')
     if name[i + 1].islower():
-        name = name[0:i+1] + name[i+1].upper() + name[i+2:]
+        name = name[0:i+1] + name[i+1].upper() + name[i+2:]'''
     if name[-3:] == 'jr.':
         name = name[0:-3] + 'Jr.'
-    elif name [-2:] == 'jr' or name[-2:] == 'Jr':
+    elif name [-2:] == 'jr' or name[-2:] == 'Jr' or name[-2:] = 'JR':
         name = name[0:-2] + 'Jr.'
     return name
 
@@ -490,15 +490,14 @@ yearButton.pack(side = LEFT, padx = 5)
 spacer.pack(side = LEFT, padx=7)
 b.pack(side = RIGHT)
 
-yearEntry.bind("<Key>", keyPressYear)
-yearEntry.bind("<KeyPress-Control_L>", controlPressed)
-yearEntry.bind("<KeyRelease-Control_L>", controlReleased)
-entry.bind("<Key>", keyPressName)
-entry.bind("<KeyPress-Control_L>", controlPressed)
-entry.bind("<KeyRelease-Control_L>", controlReleased)
+yearEntry.bind('<Key>', keyPressYear)
+yearEntry.bind('<KeyPress-Control_L>', controlPressed)
+yearEntry.bind('<KeyRelease-Control_L>', controlReleased)
+entry.bind('<Key>', keyPressName)
+entry.bind('<KeyPress-Control_L>', controlPressed)
+entry.bind('<KeyRelease-Control_L>', controlReleased)
 
 frame = Frame(top)
 frame.focus_set()
-top.geometry("+0+0")
+top.geometry('+0+0')
 top.mainloop()
-
