@@ -43,7 +43,7 @@ def handleName():
         name = name[0:i+1] + name[i+1].upper() + name[i+2:]'''
     if name[-3:] == 'jr.':
         name = name[0:-3] + 'Jr.'
-    elif name [-2:] == 'jr' or name[-2:] == 'Jr' or name[-2:] = 'JR':
+    elif name [-2:] == 'jr' or name[-2:] == 'Jr' or name[-2:] == 'JR':
         name = name[0:-2] + 'Jr.'
     return name
 
