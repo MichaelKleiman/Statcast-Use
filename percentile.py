@@ -27,6 +27,13 @@ def quicksort(arr, startIndex, endIndex):
     quicksort(arr, startIndex, pI - 1)
     quicksort(arr, pI + 1, endIndex)
 
+def cleanName(n):
+    cn = n.upper()
+    cns = cn.split('.')
+    cn = ''
+    for i in range(len(cns)):
+       cn += cns[i] 
+    return cn
 #returns the percentile of the player regarding this stat
 def main(inp, name, index = 1, reverse = False):
     arr = inp[0]
@@ -40,12 +47,13 @@ def main(inp, name, index = 1, reverse = False):
         if arr[i][1] < 0:
             x = i
             break
-    
+    cn = cleanName(name)
     for i in range(x):
-        if arr[i][0].upper() == name.upper():
+        if cleanName(arr[i][0]) == cn:
             p = 100 - (100 * i / x)
             p = round(p, 1)
             if reverse:
                 p = 100.0 - p
-            return(arr[i][0] + ": " + str(p) + '%'+ ' (' + str(arr[i][1])+ units[index] + ')')
+                return(arr[i][0] + ': ' + str(p) + '%'+ ' (' + str(arr[i][1])+ units[index] +', #' + str(len(arr)) +' of ' + str(i)+')')
+            return(arr[i][0] + ': ' + str(p) + '%'+ ' (' + str(arr[i][1])+ units[index] +', #' + str(i) +' of ' + str(len(arr))+')')
     return name + ", none (no data)"

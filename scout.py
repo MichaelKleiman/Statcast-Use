@@ -1,12 +1,20 @@
 #returns the scout scale (20-80, 50 is average +- 10 for each standard deviation) rating for a player's ability 
+def cleanName(n):                                                                                   
+  cn = n.upper()                                                                                  
+  cns = cn.split('.')                                                                             
+  cn = ''                                                                                         
+  for i in range(len(cns)):                                                                       
+  cn += cns[i]                                                                                 
+  return cn      
+
 def main(inp, name, index=1, useMean=False, reverseDev=False):
-    name = name
+    cn = cleanName(name)
     arr = inp[0]
     units = inp[1]
     x = len(arr)
     stddev=__import__('stddev')
     for i in range(len(arr)):
-        if arr[i][0].upper() == name.upper():
+        if cleanName(arr[i][0]) == cn:
             s = stddev.main(inp, arr[i][0], index, useMean, True).split(' ')
             #d is the number of std deviations from the mean, times 10 for baseball's 20-80 scale
             d = (float(arr[i][index]) - float(s[1][0:-1]))/float(s[4]) * 10
